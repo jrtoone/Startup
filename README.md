@@ -2,9 +2,6 @@
 
 [My Notes](notes.md)
 
-Very early in my life I was diagnosed with clinical OCD. Because of this, I do many things differently than 'normal' people. One of those things I am very particular about, is my calandar. I live and breathe by my calandar. But sometimes, my calandar controls me more than I control it. What if there was a calandar designed from the ground up, with mental health in mind? I think many of us, even those without mental health struggles, could benefit from a calandar focused on maintaining a healthy state of mind.
-
-This calandar would recognize when you are overburdening yourself. It could recognize unsustainable 'bursts' of productivity and help you balance it with a healthy, sustainable growth pattern. Conversly, it could help you understand when you are being 'lazy' or too unproductive, and help encourage you to do more and be better. All of this, without compromising critical functionality of other calendar apps. 
 
 
 ## 🚀 Specification Deliverable
@@ -22,7 +19,9 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 ### Elevator pitch
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Very early in my life I was diagnosed with clinical OCD. Because of this, I do many things differently than 'normal' people. One of those things I am very particular about, is my calandar. I live and breathe by my calandar. But sometimes, my calandar controls me more than I control it. What if there was a calandar designed from the ground up, with mental health in mind? I think many of us, even those without mental health struggles, could benefit from a calandar focused on maintaining a healthy state of mind.
+
+This calandar would recognize when you are overburdening yourself. It could recognize unsustainable 'bursts' of productivity and help you balance it with a healthy, sustainable growth pattern. Conversly, it could help you understand when you are being 'lazy' or too unproductive, and help encourage you to do more and be better. All of this, without compromising critical functionality of other calendar apps. 
 
 ### Design
 
