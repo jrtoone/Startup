@@ -39,20 +39,23 @@ sequenceDiagram
 
 ### Key features
 
-- Describe your key feature
-- Describe your key feature
-- Describe your key feature
+- Secure login over HTTPS
+- Basic Calandar Functionality
+- 'Do It' dates and 'Due Dates'
+- Prompts that tell you when you are overexerting
+- Prompts that tell you when you are underexerting
+
 
 ### Technologies
 
 I am going to use the required technologies in the following ways.
 
-- **HTML** - Description here
-- **CSS** - Description here
-- **React** - Description here
-- **Service** - Description here
-- **DB/Login** - Description here
-- **WebSocket** - Description here
+- **HTML** - Structure the webpage and organize the calandar
+- **CSS** - Beautify the calandar
+- **React** - Due it Dates dynamically showing time remaining, Login service
+- **Service** - Backend storage of calandared items
+- **DB/Login** - User Storage
+- **WebSocket** - Unclear how I am going to implement this for the class. I want to set up a way where you can share calandars with friends, but if that proves too much i will likely implement a texting feature
 
 ## 🚀 AWS deliverable
 
