@@ -57,17 +57,20 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 
 ## 🚀 HTML deliverable
 
-For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+## HTML deliverable
 
-- [ ] **HTML pages** - I did not complete this part of the deliverable.
-- [ ] **Proper HTML element usage** - I did not complete this part of the deliverable.
-- [ ] **Links** - I did not complete this part of the deliverable.
-- [ ] **Text** - I did not complete this part of the deliverable.
-- [ ] **3rd party API placeholder** - I did not complete this part of the deliverable.
-- [ ] **Images** - I did not complete this part of the deliverable.
-- [ ] **Login placeholder** - I did not complete this part of the deliverable.
-- [ ] **DB data placeholder** - I did not complete this part of the deliverable.
-- [ ] **WebSocket placeholder** - I did not complete this part of the deliverable.
+For this deliverable I built out the structure of my application using HTML.
+
+- [x] **HTML pages** - Several HTML pages, but the main ones being Active Games, and the landing page.
+- [x] **Links** - There is a return home link on each page, and the landing page allows linking to each of the relevent pages
+- [x] **Text** - Each of the relevent technologies are represented with a short description.
+- [x] **Images** - There is a logo provided in the navbar (The symbol for the god 'Guthix' in runescape)
+- [x] **DB/Login** - Placeholder for register and login provided.
+- [x] **WebSocket** - Placeholder for websockets provided on active games page
+
+- [x] **Proper HTML element usage** - I have a header, nav, and body. all relevent HTML elements are used
+- [x] **3rd party API placeholder** - Placeholder on Active games page.
+- [x] **DB data placeholder** - Placeholder under Active Games page.
 
 ## 🚀 CSS deliverable
 
