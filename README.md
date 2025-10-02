@@ -76,12 +76,11 @@ For this deliverable I built out the structure of my application using HTML.
 
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
-- [ ] **Header, footer, and main content body** - I did not complete this part of the deliverable.
-- [ ] **Navigation elements** - I did not complete this part of the deliverable.
-- [ ] **Responsive to window resizing** - I did not complete this part of the deliverable.
-- [ ] **Application elements** - I did not complete this part of the deliverable.
-- [ ] **Application text content** - I did not complete this part of the deliverable.
-- [ ] **Application images** - I did not complete this part of the deliverable.
+- [x] **Header, footer, and main content body** - I forgot my footer last deliverable so I added it, and styled the header, footer and content.
+- [x] **Navigation elements** - This is where I spent the most of my time, because this is what I dont expect to change much. The other stylings I expect I will alter after we go over react.
+- [x] **Responsive to window resizing** - Also the most reponsive part of my page thus far is the navbar. but I admit I am big proud of it. 
+- [x] **Application elements** - I styled what I could, but almost everything here will need to be done in react.
+- [x] **Application images** - My page is not going to be image heavy, but the image that I do have is responsive as it is in the navbar
 
 ## 🚀 React part 1: Routing deliverable
 
