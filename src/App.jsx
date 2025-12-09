@@ -62,8 +62,8 @@ function HomePage() {
   return (
     <div>
       {/* Your Bootstrap navbar from index.html, just React-ified (class -> className) */}
-      <nav className="navbar navbar-expand-md navbar-light">
-        <div className="container-xxl">
+      <nav className="navbar navbar-expand-md navbar-light bg-light">
+        <div className="container-fluid">
           <a href="intro" className="navbar-brand">
             <span className="fw-bold text-primary">
               <img
@@ -278,7 +278,46 @@ function MyBoardsPage() {
     saveBoards(updatedBoards);
     setNewBoardName('');
   }
-  
+  return (
+    <main className="container mt-4">
+      <h1>My Boards</h1>
+      <p>Manage your personal bingo boards here. These are stored locally in your browser for now</p>
+
+      {/*New board form*/}
+      <form className="mb-3" onSubmit={handleAddBoard}>
+        <div className="mb-2">
+          <label className="form-label" htmlFor="newBoardName">
+            New board name
+          </label>
+          <input
+            id='newBoardName'
+            type='text'
+            className='form-control'
+            placeholder='e.g. Slayer Task, Barrows Tiles, TOB Uniques, etc'
+            value={newBoardName}
+            onChange={(e) => setNewBoardName(e.target.value)}
+          />
+        </div>
+        <button type='submit' className='btn btn-primary'>
+          Add Board
+        </button>
+      </form>
+
+      {/* List of boards */}
+      {boards.length === 0 ? (
+        <p>You don't have any boards yet. Add your first bingo board above!</p>
+      ) : (
+        <ul className='list-group'>
+          {boards.map((board) => (
+            <li key={board.id} className='list-group-item d-flex justify-content-between align-items-center'>
+              <span>{board.name}</span>
+              <span className='badge bg-secondary'>Bingo board</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  )
 }
 
 function PublicBoardsPage() {
