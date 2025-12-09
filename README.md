@@ -19,3 +19,25 @@ For this deliverable I converted my startup application from plain HTML/CSS into
 - **Application identity** – I added my name and a prominent link to my GitHub startup repository in the footer of the home page as required by the deliverable rubric.
 
 - **Deployment** – I replaced my previous deployment script with `deployReact.sh` from the Simon React project. I built the production version of my React application and deployed it to my production server using the required `-s startup` parameter. The React application is now live at my startup domain.
+
+
+## 🚀 React Phase 2: Reactivity Deliverable
+
+For this deliverable I used JavaScript and React to make my startup fully functional for a single user.  
+All core functionality is now implemented or appropriately mocked out using local storage and simulated WebSocket behavior.
+
+### ✔ All functionality implemented or mocked out
+- Login system fully works using `localStorage` to persist the username.
+- "My Boards" page supports creating and saving bingo boards locally.
+- "Active Games" page simulates live updates using `setInterval` (mocking future WebSocket messages).
+- Routing and navigation are fully functional across all pages.
+- A persistent Bootstrap navbar appears on every page.
+
+### ✔ Hooks
+- **useState** is used throughout for user login state, board lists, game data, and form values.
+- **useEffect** is used for:
+  - Loading saved login and board data from `localStorage`.
+  - Simulating real-time game updates in Active Games.
+  - Initializing component state when pages load.
+
+This completes the reactivity portion of the project. The app now behaves like a real interactive application, with dynamic components and persistent user data.
