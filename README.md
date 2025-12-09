@@ -1,16 +1,21 @@
-# React + Vite
+## 🚀 React Phase 1: Routing Deliverable
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+For this deliverable I converted my startup application from plain HTML/CSS into a Vite + React project. I followed the Simon React Part 1 instructions and restructured my application into components with a client-side router. This phase does not include reactivity; it prepares the application for React-based logic in the next deliverable.
 
-Currently, two official plugins are available:
+- **Bundled using Vite** – Vite now builds and serves my application. I verified the development server, hot module reloading, and production build output.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Components** – I created multiple components representing the major sections of my application.  
+  - `HomePage` contains my original home page content including the Bootstrap navbar, games list, and login form.  
+  - `ActiveGamesPage` contains the Bootstrap grid demonstration from my prior implementation.  
+  - Additional components (`CreateGroupPage`, `JoinGroupPage`, `MyBoardsPage`, `PublicBoardsPage`) are included as structured stubs for future work.
 
-## React Compiler
+- **Router** – I installed and configured React Router to navigate between pages.  
+  - Wrapped the application in `<BrowserRouter>` in `main.jsx`.  
+  - Added `<Routes>` and `<Route>` definitions in `App.jsx` for each page in the application.  
+  - Updated internal navigation to use `<Link>` elements.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **CSS and Bootstrap integration** – I installed Bootstrap through npm and imported it, alongside my existing `StyleSheet.css`, directly into the React entry point for global styling.
 
-## Expanding the ESLint configuration
+- **Application identity** – I added my name and a prominent link to my GitHub startup repository in the footer of the home page as required by the deliverable rubric.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Deployment** – I replaced my previous deployment script with `deployReact.sh` from the Simon React project. I built the production version of my React application and deployed it to my production server using the required `-s startup` parameter. The React application is now live at my startup domain.
