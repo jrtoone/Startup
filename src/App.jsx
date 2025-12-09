@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 function App() {
   return (
@@ -30,6 +31,34 @@ function App() {
 /* ---------- Home page: React version of your index.html ---------- */
 
 function HomePage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loggedInUser, setLoggedInUser] = useState(null);
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gg_username');
+    if (savedUser) {
+      setLoggedInUser(savedUser);
+    }
+  }, []);
+  function handleLoginSubmit(event) {
+    event.preventDefault();
+
+    if (!username.trim()) {
+      alert('Please enter a username');
+      return;
+    }
+    const cleanName = username.trim();
+    localStorage.setItem('gg_username', cleanName);
+    setLoggedInUser(cleanName)
+    setPassword('');
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('gg_username');
+    setLoggedInUser(null);
+    setUsername('');
+    setPassword('');
+  }
   return (
     <div>
       {/* Your Bootstrap navbar from index.html, just React-ified (class -> className) */}
@@ -87,7 +116,15 @@ function HomePage() {
       {/* Main content from your original index.html body */}
       <main className="container mt-4">
         <h1>Guthix Games</h1>
-
+        {loggedInUser ? (
+          <p>
+            Welcome back, <strong>{loggedInUser}</strong>!
+          </p>
+        ) : (
+          <p>
+            Welcome to Guthix Games. Please log in to manage your boards and games.
+          </p>
+        )}
         <h2 id="games">Games</h2>
         <ul>
           <li>
@@ -120,14 +157,41 @@ function HomePage() {
           <li>Daily&apos;s</li>
         </ul>
 
-        <h2 id="login">Login</h2>
-        {/* For now, this is just the static form. We’ll wire up logic later in the React reactivity phase. */}
-        <form id="loginForm">
-          <input type="text" id="username" placeholder="username" />
-          <input type="text" id="password" placeholder="password" />
-          <button type="submit">Login</button>
-        </form>
-        <div id="output"></div>
+        {loggedInUser ? (
+          <div>
+            <p>
+              You are currently logged in as <strong>{loggedInUser}</strong>.
+            </p>
+            <button className="btn btn-outline-danger" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleLoginSubmit}>
+            <div className="mb-2">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="mb-2">
+              <input
+                type="password"
+                className="form-control"
+                placeholder="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Login
+            </button>
+          </form>
+        )}
+
       </main>
 
       <footer className="mt-4">
@@ -185,7 +249,36 @@ function JoinGroupPage() {
 }
 
 function MyBoardsPage() {
-  return <h1>My Boards (stub)</h1>;
+  const [boards, setBoards] = useState([]);
+  const [newBoardName, setNewBoardName] = useState('');
+
+  useEffect(() => {
+    const savedBoards = JSON.parse(localStorage.getItem('gg_boards') || '[]');
+    setBoards(savedBoards);
+  }, []);
+  function saveBoards(updatedBoards) {
+    setBoards(updatedBoards);
+    localStorage.setItem('gg_boards', JSON.stringify(updatedBoards));
+  }
+  function handleAddBoard(event) {
+    event.preventDefault();
+
+    const trimmedName = newBoardName.trim();
+    if(!trimmedName) {
+      alert('Please enter a board name');
+      return;
+    }
+
+    const newBoard = {
+      id:Date.now(),
+      name: trimmedName,
+    };
+
+    const updatedBoards = [...boards, newBoard];
+    saveBoards(updatedBoards);
+    setNewBoardName('');
+  }
+  
 }
 
 function PublicBoardsPage() {
