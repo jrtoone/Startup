@@ -53,8 +53,7 @@ For this deliverable I added backend service support to my startup application, 
   Express serves the bundled React frontend from the `public` directory in production.
 
 - **Calls to third party endpoints – done!**  
-  Added a TempleOSRS collection log proxy (`/api/temple/recent/:username`) that fetches real player data server-side to avoid CORS issues.
-
+  Added a TempleOSRS collection log proxy (`/api/temple/recent/:username`). I know whoever is grading this likely has never played RuneScape, the game in which this website intereacts. So feel free to use either my username 'MrMrFish' or the documentations provided username 'Mikael' to test the api call. Essentially, what it should give you back is a list of items recently obtained in game. The service I am using is called TempleOSRS, which is a third party that hosts game these API's for the game.
 - **Backend service endpoints – done!**  
   Implemented endpoints for account creation, login, logout, session validation, a restricted `/api/boards` route, and the TempleOSRS API passthrough.
 
