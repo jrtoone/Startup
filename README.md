@@ -41,3 +41,25 @@ All core functionality is now implemented or appropriately mocked out using loca
   - Initializing component state when pages load.
 
 This completes the reactivity portion of the project. The app now behaves like a real interactive application, with dynamic components and persistent user data.
+
+# Service deliverable
+
+For this deliverable I added backend service support to my startup application, including authentication, restricted endpoints, and a third-party API integration.
+
+- **Node.js/Express HTTP service – done!**  
+  Backend service created in `/service/index.js` using Express, cookie-parser, bcryptjs, and uuid.
+
+- **Static middleware for frontend – done!**  
+  Express serves the bundled React frontend from the `public` directory in production.
+
+- **Calls to third party endpoints – done!**  
+  Added a TempleOSRS collection log proxy (`/api/temple/recent/:username`) that fetches real player data server-side to avoid CORS issues.
+
+- **Backend service endpoints – done!**  
+  Implemented endpoints for account creation, login, logout, session validation, a restricted `/api/boards` route, and the TempleOSRS API passthrough.
+
+- **Frontend calls service endpoints – done!**  
+  React now uses `fetch('/api/...')` to call all backend routes including auth, boards, and TempleOSRS data.
+
+- **Supports registration, login, logout, and restricted endpoint – done!**  
+  Authentication fully implemented using hashed passwords and HttpOnly cookies, with restricted routes requiring login.

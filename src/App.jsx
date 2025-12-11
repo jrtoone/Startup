@@ -80,30 +80,114 @@ function HomePage() {
   const [password, setPassword] = useState('');
   const [loggedInUser, setLoggedInUser] = useState(null);
   useEffect(() => {
-    const savedUser = localStorage.getItem('gg_username');
-    if (savedUser) {
-      setLoggedInUser(savedUser);
+    async function loadUser() {
+      try {
+        const response = await fetch('/api/user');
+        if (response.ok) {
+          const data = await response.json();
+          setLoggedInUser(data.username);
+          setUsername('');
+          setPassword('');
+        } else {
+          // Not logged in or error; just treat as logged-out
+          setLoggedInUser(null);
+        }
+      } catch (err) {
+        console.error('Error loading current user', err);
+      }
     }
+
+    loadUser();
   }, []);
-  function handleLoginSubmit(event) {
+
+  async function handleLoginSubmit(event) {
     event.preventDefault();
 
-    if (!username.trim()) {
-      alert('Please enter a username');
+    if (!username.trim() || !password) {
+      alert('Please enter both username and password');
       return;
     }
-    const cleanName = username.trim();
-    localStorage.setItem('gg_username', cleanName);
-    setLoggedInUser(cleanName)
-    setPassword('');
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLoggedInUser(data.username);
+        setPassword('');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.msg || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Error logging in', err);
+      alert('Error logging in. Please try again.');
+    }
   }
 
-  function handleLogout() {
-    localStorage.removeItem('gg_username');
-    setLoggedInUser(null);
-    setUsername('');
-    setPassword('');
+  async function handleRegister() {
+    if (!username.trim() || !password) {
+      alert('Please enter both username and password to register');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLoggedInUser(data.username);
+        setPassword('');
+        alert('Account created and logged in!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 409) {
+          alert(errorData.msg || 'User already exists');
+        } else {
+          alert(errorData.msg || 'Registration failed');
+        }
+      }
+    } catch (err) {
+      console.error('Error registering', err);
+      alert('Error creating account. Please try again.');
+    }
   }
+
+  async function handleLogout() {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        console.warn('Logout returned non-OK status', response.status);
+      }
+
+      setLoggedInUser(null);
+      setUsername('');
+      setPassword('');
+    } catch (err) {
+      console.error('Error logging out', err);
+      setLoggedInUser(null);
+      setUsername('');
+      setPassword('');
+    }
+  }
+
   return (
     <div>
       {/* Main content from your original index.html body */}
@@ -181,6 +265,13 @@ function HomePage() {
             </div>
             <button type="submit" className="btn btn-primary">
               Login
+            </button>
+            <button
+              type='button'
+              className='btn btn-outline-secondary'
+              onClick={handleRegister}
+            >
+              Register
             </button>
           </form>
         )}
@@ -278,6 +369,10 @@ function JoinGroupPage() {
 function MyBoardsPage() {
   const [boards, setBoards] = useState([]);
   const [newBoardName, setNewBoardName] = useState('');
+  const [recentRsn, setRecentRsn] = useState('');
+  const [recentItems, setRecentItems] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(false);
+  const [recentError, setRecentError] = useState(null);
 
   useEffect(() => {
     const savedBoards = JSON.parse(localStorage.getItem('gg_boards') || '[]');
@@ -305,6 +400,49 @@ function MyBoardsPage() {
     saveBoards(updatedBoards);
     setNewBoardName('');
   }
+  async function handleFetchRecent(event) {
+    event.preventDefault();
+
+    const trimmed = recentRsn.trim();
+    if (!trimmed) {
+      alert('Please enter an OSRS username');
+      return;
+    }
+
+    setRecentLoading(true);
+    setRecentError(null);
+    setRecentItems([]);
+
+    try {
+      const response = await fetch(
+        `/api/temple/recent/${encodeURIComponent(trimmed)}`
+      );
+
+      if (!response.ok) {
+        let message = 'TempleOSRS request failed';
+        try {
+          const errJson = await response.json();
+          if (errJson.msg) {
+            message = errJson.msg;
+          }
+        } catch {
+          // ignore JSON parse errors, keep default message
+        }
+        setRecentError(message);
+        setRecentItems([]);
+        setRecentLoading(false);
+        return;
+      }
+  
+      const data = await response.json();
+      setRecentItems(data.items || []);
+    } catch (err) {
+      console.error('Error fetching recent collection log items', err);
+      setRecentError('Could not load recent collection log items.');
+    } finally {
+      // we already setLoading(false) early on non-OK; this is for success/network failures
+      setRecentLoading(false);
+    }  }
   return (
     <main className="container mt-4">
       <h1>My Boards</h1>
@@ -343,6 +481,69 @@ function MyBoardsPage() {
           ))}
         </ul>
       )}
+            <hr className="my-4" />
+
+<section>
+  <h2>Recent Collection Log Items (TempleOSRS)</h2>
+  <p className="text-muted">
+    Enter an OSRS username to see their most recent collection log unlocks from TempleOSRS.
+  </p>
+
+  <form className="row gy-2 gx-2 align-items-center" onSubmit={handleFetchRecent}>
+    <div className="col-sm-4">
+      <input
+        type="text"
+        className="form-control"
+        placeholder="OSRS username"
+        value={recentRsn}
+        onChange={(e) => setRecentRsn(e.target.value)}
+      />
+    </div>
+    <div className="col-sm-auto">
+      <button type="submit" className="btn btn-outline-primary">
+        Load recent items
+      </button>
+    </div>
+  </form>
+
+  <div className="mt-3">
+    {recentLoading && <p>Loading recent collection log items...</p>}
+
+    {recentError && (
+      <div className="alert alert-danger" role="alert">
+        {recentError}
+      </div>
+    )}
+
+    {!recentLoading && !recentError && recentItems.length === 0 && (
+      <p className="text-muted">
+        No recent items to display yet. Try searching for a player that has synced with TempleOSRS.
+      </p>
+    )}
+
+    {recentItems.length > 0 && (
+      <ul className="list-group">
+        {recentItems.map((item, idx) => (
+          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{item.name || `Item ${item.id}`}</strong>
+              {item.date && (
+                <span className="text-muted ms-2">
+                  ({item.date})
+                </span>
+              )}
+            </div>
+            {item.notable && (
+              <span className="badge bg-warning text-dark">
+                Notable
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
     </main>
   )
 }
