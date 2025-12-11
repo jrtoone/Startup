@@ -62,3 +62,12 @@ For this deliverable I added backend service support to my startup application, 
 
 - **Supports registration, login, logout, and restricted endpoint – done!**  
   Authentication fully implemented using hashed passwords and HttpOnly cookies, with restricted routes requiring login.
+
+
+## DB/Login deliverable
+
+For this deliverable I associate the bingo boards with the logged in user. I stored the boards in the database.
+To see this in motino, go to 'My Boards' and add one. You can refresh or logout but they persist, due to being stored on MangoDB.
+
+- [x] **Stores data in MongoDB** - done!
+- [x] **Use MongoDB to store credentials** - Stores both user and their boards.

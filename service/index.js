@@ -1,18 +1,27 @@
-// service/index.js
-const fetch = require('node-fetch');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 
-// In-memory stores (reset whenever the server restarts)
-const users = new Map();      // username -> { passwordHash }
-const authTokens = new Map(); // token -> username
+// In-memory auth token store (still in memory)
+const authTokens = new Map();
 
 // Use port 4000 by default, or override from command line
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
+
+// ----- MongoDB setup -----
+const dbConfigPath = path.join(__dirname, 'dbConfig.json');
+const dbConfig = JSON.parse(fs.readFileSync(dbConfigPath, 'utf8'));
+const client = new MongoClient(dbConfig.connectionString);
+
+let usersCollection;
+let boardsCollection;
 
 // Middleware
 app.use(express.json());
@@ -50,69 +59,83 @@ app.get('/api/health', (req, res) => {
 });
 
 // Create account and log in
-app.post('/api/auth/create', (req, res) => {
-  try {
-    const { username, password } = req.body || {};
-
-    if (!username || !password) {
-      return res.status(400).json({ msg: 'Username and password required' });
+app.post('/api/auth/create', async (req, res) => {
+    try {
+      const { username, password } = req.body || {};
+  
+      if (!username || !password) {
+        return res.status(400).json({ msg: 'Username and password required' });
+      }
+  
+      // Check if user already exists in MongoDB
+      const existing = await usersCollection.findOne({ username });
+      if (existing) {
+        return res.status(409).json({ msg: 'User already exists' });
+      }
+  
+      // Hash the password
+      const passwordHash = await bcrypt.hash(password, 10);
+  
+      // Insert user into MongoDB
+      await usersCollection.insertOne({
+        username,
+        passwordHash,
+        createdAt: new Date(),
+      });
+  
+      // Create auth token and store in memory map
+      const authToken = crypto.randomUUID();
+      authTokens.set(authToken, username);
+  
+      // Set auth cookie
+      res.cookie('authToken', authToken, {
+        httpOnly: true,
+        sameSite: 'strict',
+      });
+  
+      res.status(201).json({ username });
+    } catch (err) {
+      console.error('Error in /api/auth/create:', err);
+      res.status(500).json({ msg: 'Internal server error' });
     }
-
-    if (users.has(username)) {
-      return res.status(409).json({ msg: 'User already exists' });
-    }
-
-    const passwordHash = bcrypt.hashSync(password, 10);
-    users.set(username, { passwordHash });
-
-    const authToken = generateAuthToken();
-    authTokens.set(authToken, username);
-
-    res.cookie('authToken', authToken, {
-      httpOnly: true,
-      sameSite: 'strict',
-    });
-
-    return res.status(201).json({ username });
-  } catch (err) {
-    console.error('Error in /api/auth/create:', err);
-    return res.status(500).json({ msg: 'Internal server error' });
-  }
-});
+  });
 
 // Login
-app.post('/api/auth/login', (req, res) => {
-  try {
-    const { username, password } = req.body || {};
-
-    if (!username || !password) {
-      return res.status(400).json({ msg: 'Username and password required' });
+app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { username, password } = req.body || {};
+  
+      if (!username || !password) {
+        return res.status(400).json({ msg: 'Username and password required' });
+      }
+  
+      // Look up user from MongoDB
+      const user = await usersCollection.findOne({ username });
+      if (!user) {
+        return res.status(401).json({ msg: 'Invalid username or password' });
+      }
+  
+      // Compare password with stored hash
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ msg: 'Invalid username or password' });
+      }
+  
+      // Generate auth token and store it
+      const authToken = crypto.randomUUID();
+      authTokens.set(authToken, username);
+  
+      res.cookie('authToken', authToken, {
+        httpOnly: true,
+        sameSite: 'strict',
+      });
+  
+      res.json({ username });
+    } catch (err) {
+      console.error('Error in /api/auth/login:', err);
+      res.status(500).json({ msg: 'Internal server error' });
     }
-
-    const user = users.get(username);
-    if (!user) {
-      return res.status(401).json({ msg: 'Invalid username or password' });
-    }
-
-    const valid = bcrypt.compareSync(password, user.passwordHash);
-    if (!valid) {
-      return res.status(401).json({ msg: 'Invalid username or password' });
-    }
-
-    const authToken = generateAuthToken();
-    authTokens.set(authToken, username);
-
-    res.cookie('authToken', authToken, {
-      httpOnly: true,
-      sameSite: 'strict',
-    });
-
-    return res.json({ username });
-  } catch (err) {
-    console.error('Error in /api/auth/login:', err);
-    return res.status(500).json({ msg: 'Internal server error' });
-  }
-});
+  });
 
 // Logout
 app.post('/api/auth/logout', (req, res) => {
@@ -145,25 +168,53 @@ app.get('/api/user', (req, res) => {
 });
 
 // Restricted endpoint: only for logged-in users
-app.get('/api/boards', (req, res) => {
+app.get('/api/boards', async (req, res) => {
   try {
     const user = getUserFromToken(req);
     if (!user) {
       return res.status(401).json({ msg: 'Not authenticated' });
     }
 
-    // Mock data for now
-    const boards = [
-      { id: 1, name: 'Corp Bingo', owner: user.username },
-      { id: 2, name: 'Slayer Task Tiles', owner: user.username },
-    ];
+    // Find all boards belonging to this user
+    const boards = await boardsCollection
+      .find({ owner: user.username })
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    return res.json({ boards });
+    res.json({ boards });
   } catch (err) {
-    console.error('Error in /api/boards:', err);
-    return res.status(500).json({ msg: 'Internal server error' });
+    console.error('Error in GET /api/boards:', err);
+    res.status(500).json({ msg: 'Internal server error' });
   }
 });
+
+app.post('/api/boards', async (req, res) => {
+    try {
+      const user = getUserFromToken(req);
+      if (!user) {
+        return res.status(401).json({ msg: 'Not authenticated' });
+      }
+  
+      const { name } = req.body || {};
+      if (!name || !name.trim()) {
+        return res.status(400).json({ msg: 'Board name required' });
+      }
+  
+      const newBoard = {
+        owner: user.username,
+        name: name.trim(),
+        createdAt: new Date(),
+      };
+  
+      const result = await boardsCollection.insertOne(newBoard);
+      newBoard._id = result.insertedId;
+  
+      res.status(201).json(newBoard);
+    } catch (err) {
+      console.error('Error in POST /api/boards:', err);
+      res.status(500).json({ msg: 'Internal server error' });
+    }
+  });
 
 // Proxy TempleOSRS recent collection log items for a player
 app.get('/api/temple/recent/:username', async (req, res) => {
@@ -222,6 +273,22 @@ app.get('/api/temple/recent/:username', async (req, res) => {
   });
 
 // Start the service
-app.listen(port, () => {
-  console.log(`Guthix Games service listening on port ${port}`);
-});
+async function startServer() {
+    try {
+      await client.connect();
+      const db = client.db(dbConfig.dbName);
+  
+      usersCollection = db.collection('users');
+      boardsCollection = db.collection('boards');
+  
+      app.listen(port, () => {
+        console.log(`Guthix Games service listening on port ${port}`);
+        console.log(`Connected to MongoDB database: ${dbConfig.dbName}`);
+      });
+    } catch (err) {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    }
+  }
+  
+  startServer();

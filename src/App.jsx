@@ -374,32 +374,69 @@ function MyBoardsPage() {
   const [recentLoading, setRecentLoading] = useState(false);
   const [recentError, setRecentError] = useState(null);
 
+  // Load boards from backend on mount
   useEffect(() => {
-    const savedBoards = JSON.parse(localStorage.getItem('gg_boards') || '[]');
-    setBoards(savedBoards);
+    async function loadBoards() {
+      try {
+        const response = await fetch('/api/boards');
+
+        if (response.status === 401) {
+          console.warn('Not authenticated when loading boards');
+          setBoards([]);
+          return;
+        }
+
+        const data = await response.json();
+        setBoards(data.boards || []);
+      } catch (err) {
+        console.error('Error loading boards:', err);
+      }
+    }
+
+    loadBoards();
   }, []);
-  function saveBoards(updatedBoards) {
-    setBoards(updatedBoards);
-    localStorage.setItem('gg_boards', JSON.stringify(updatedBoards));
-  }
-  function handleAddBoard(event) {
+
+  // Add a new board using POST /api/boards
+  async function handleAddBoard(event) {
     event.preventDefault();
 
     const trimmedName = newBoardName.trim();
-    if(!trimmedName) {
+    if (!trimmedName) {
       alert('Please enter a board name');
       return;
     }
 
-    const newBoard = {
-      id:Date.now(),
-      name: trimmedName,
-    };
+    try {
+      const response = await fetch('/api/boards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmedName }),
+      });
 
-    const updatedBoards = [...boards, newBoard];
-    saveBoards(updatedBoards);
-    setNewBoardName('');
+      if (response.status === 401) {
+        alert('You must be logged in to add boards.');
+        return;
+      }
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        console.error('Failed to create board:', errorBody);
+        alert('Failed to create board.');
+        return;
+      }
+
+      const createdBoard = await response.json();
+
+      // prepend new board into state
+      setBoards((prev) => [createdBoard, ...prev]);
+      setNewBoardName('');
+    } catch (err) {
+      console.error('Error creating board:', err);
+      alert('Error creating board.');
+    }
   }
+
+  // TempleOSRS recent-items handler
   async function handleFetchRecent(event) {
     event.preventDefault();
 
@@ -426,44 +463,48 @@ function MyBoardsPage() {
             message = errJson.msg;
           }
         } catch {
-          // ignore JSON parse errors, keep default message
+          // ignore JSON parse errors
         }
         setRecentError(message);
         setRecentItems([]);
         setRecentLoading(false);
         return;
       }
-  
+
       const data = await response.json();
       setRecentItems(data.items || []);
     } catch (err) {
       console.error('Error fetching recent collection log items', err);
       setRecentError('Could not load recent collection log items.');
     } finally {
-      // we already setLoading(false) early on non-OK; this is for success/network failures
       setRecentLoading(false);
-    }  }
+    }
+  }
+
   return (
     <main className="container mt-4">
       <h1>My Boards</h1>
-      <p>Manage your personal bingo boards here. These are stored locally in your browser for now</p>
+      <p>
+        Manage your personal bingo boards here. Boards are saved to your
+        Guthix Games account on the server.
+      </p>
 
-      {/*New board form*/}
+      {/* New board form */}
       <form className="mb-3" onSubmit={handleAddBoard}>
         <div className="mb-2">
           <label className="form-label" htmlFor="newBoardName">
             New board name
           </label>
           <input
-            id='newBoardName'
-            type='text'
-            className='form-control'
-            placeholder='e.g. Slayer Task, Barrows Tiles, TOB Uniques, etc'
+            id="newBoardName"
+            type="text"
+            className="form-control"
+            placeholder="e.g. Slayer Task, Barrows Tiles, TOB Uniques, etc"
             value={newBoardName}
             onChange={(e) => setNewBoardName(e.target.value)}
           />
         </div>
-        <button type='submit' className='btn btn-primary'>
+        <button type="submit" className="btn btn-primary">
           Add Board
         </button>
       </form>
@@ -472,80 +513,91 @@ function MyBoardsPage() {
       {boards.length === 0 ? (
         <p>You don't have any boards yet. Add your first bingo board above!</p>
       ) : (
-        <ul className='list-group'>
+        <ul className="list-group">
           {boards.map((board) => (
-            <li key={board.id} className='list-group-item d-flex justify-content-between align-items-center'>
+            <li
+              key={board._id || board.id}
+              className="list-group-item d-flex justify-content-between align-items-center"
+            >
               <span>{board.name}</span>
-              <span className='badge bg-secondary'>Bingo board</span>
+              <span className="badge bg-secondary">Bingo board</span>
             </li>
           ))}
         </ul>
       )}
-            <hr className="my-4" />
 
-<section>
-  <h2>Recent Collection Log Items (TempleOSRS)</h2>
-  <p className="text-muted">
-    Enter an OSRS username to see their most recent collection log unlocks from TempleOSRS.
-  </p>
+      <hr className="my-4" />
 
-  <form className="row gy-2 gx-2 align-items-center" onSubmit={handleFetchRecent}>
-    <div className="col-sm-4">
-      <input
-        type="text"
-        className="form-control"
-        placeholder="OSRS username"
-        value={recentRsn}
-        onChange={(e) => setRecentRsn(e.target.value)}
-      />
-    </div>
-    <div className="col-sm-auto">
-      <button type="submit" className="btn btn-outline-primary">
-        Load recent items
-      </button>
-    </div>
-  </form>
+      {/* TempleOSRS section */}
+      <section>
+        <h2>Recent Collection Log Items (TempleOSRS)</h2>
+        <p className="text-muted">
+          Enter an OSRS username to see their most recent collection log
+          unlocks from TempleOSRS.
+        </p>
 
-  <div className="mt-3">
-    {recentLoading && <p>Loading recent collection log items...</p>}
+        <form
+          className="row gy-2 gx-2 align-items-center"
+          onSubmit={handleFetchRecent}
+        >
+          <div className="col-sm-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="OSRS username"
+              value={recentRsn}
+              onChange={(e) => setRecentRsn(e.target.value)}
+            />
+          </div>
+          <div className="col-sm-auto">
+            <button type="submit" className="btn btn-outline-primary">
+              Load recent items
+            </button>
+          </div>
+        </form>
 
-    {recentError && (
-      <div className="alert alert-danger" role="alert">
-        {recentError}
-      </div>
-    )}
+        <div className="mt-3">
+          {recentLoading && <p>Loading recent collection log items...</p>}
 
-    {!recentLoading && !recentError && recentItems.length === 0 && (
-      <p className="text-muted">
-        No recent items to display yet. Try searching for a player that has synced with TempleOSRS.
-      </p>
-    )}
-
-    {recentItems.length > 0 && (
-      <ul className="list-group">
-        {recentItems.map((item, idx) => (
-          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>{item.name || `Item ${item.id}`}</strong>
-              {item.date && (
-                <span className="text-muted ms-2">
-                  ({item.date})
-                </span>
-              )}
+          {recentError && (
+            <div className="alert alert-danger" role="alert">
+              {recentError}
             </div>
-            {item.notable && (
-              <span className="badge bg-warning text-dark">
-                Notable
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-</section>
+          )}
+
+          {!recentLoading && !recentError && recentItems.length === 0 && (
+            <p className="text-muted">
+              No recent items to display yet. Try searching for a player that
+              has synced with TempleOSRS.
+            </p>
+          )}
+
+          {recentItems.length > 0 && (
+            <ul className="list-group">
+              {recentItems.map((item, idx) => (
+                <li
+                  key={idx}
+                  className="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  <div>
+                    <strong>{item.name || `Item ${item.id}`}</strong>
+                    {item.date && (
+                      <span className="text-muted ms-2">({item.date})</span>
+                    )}
+                  </div>
+                  {item.notable && (
+                    <span className="badge bg-warning text-dark">
+                      Notable
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
     </main>
-  )
+  );
 }
 
 function PublicBoardsPage() {
