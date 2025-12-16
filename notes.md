@@ -225,3 +225,156 @@ div { padding: 10px 20px; }
 - HTTPS requires certificate  
 - `ls -la` = shows all files in long format  
 - You can add new properties to JS objects dynamically  
+
+
+
+
+
+CS 260 Final Exam – Quick Note Sheet
+
+⸻
+
+Networking & HTTP Basics
+
+Default Ports
+	•	HTTP: 80
+	•	HTTPS: 443
+	•	SSH: 22
+
+HTTP Status Code Ranges
+	•	300s (Redirection): Resource moved / client must take additional action
+	•	400s (Client Error): Bad request, unauthorized, forbidden, not found
+	•	500s (Server Error): Server failed to fulfill a valid request
+
+Content-Type HTTP Header
+	•	Tells the client/server how to interpret the body of the request/response
+	•	Examples: application/json, text/html, image/png
+
+⸻
+
+Cookies & Security
+
+Secure Cookie
+	•	Sent only over HTTPS
+
+HttpOnly Cookie
+	•	Not accessible by JavaScript (protects against XSS)
+
+SameSite Cookie
+	•	Controls whether cookies are sent with cross-site requests
+	•	Values: Strict, Lax, None
+
+⸻
+
+Express & Node.js
+
+Express Middleware Execution
+	•	Runs top to bottom in the order defined
+	•	Each middleware must call next() to continue
+
+MongoDB Query { name: "Mark" }
+	•	Matches all documents where name equals exactly "Mark"
+
+Password Storage (Best Practice)
+	•	Never store plain text passwords
+	•	Store hashed + salted passwords
+	•	Common libraries: bcrypt, argon2
+
+⸻
+
+WebSockets
+
+WebSocket Protocol Purpose
+	•	Persistent, full-duplex communication between client and server
+	•	Faster than polling or repeated HTTP requests
+
+WebSocket Console Output Questions
+	•	Front end logs depend on:
+	•	What the server sends via socket.send()
+	•	Event order: onopen → onmessage → onclose
+
+⸻
+
+JavaScript & Front End
+
+fetch() Function
+	•	Makes HTTP requests from the browser or Node
+	•	Returns a Promise that resolves to a Response object
+	•	Must call .json() or .text() to read body
+
+What fetch() Returns
+	•	A Promise, not the data itself
+
+⸻
+
+React
+
+React Component Output
+	•	JSX returns HTML-like elements
+	•	Props (parameters) control dynamic output
+
+Nested React Components
+	•	Render inside-out based on component hierarchy
+
+React.useState()
+	•	Adds state to a functional component
+	•	Returns: [value, setValue]
+
+React Hooks – Purpose
+	•	Let functional components use state, lifecycle, and context features
+
+Common React Hooks
+	•	State Hook (useState) – Manage component state
+	•	Effect Hook (useEffect) – Run side effects (fetching, timers, subscriptions)
+	•	Context Hook (useContext) – Access shared/global state
+	•	Ref Hook (useRef) – Persist values without re-rendering / access DOM elements
+	•	Performance Hooks – Optimize rendering (useMemo, useCallback)
+
+⸻
+
+React Router
+
+Key Facts
+	•	Enables client-side routing
+	•	URL changes do not reload the page
+	•	<Route> defines path → component mapping
+	•	<Link> replaces <a> for navigation
+
+⸻
+
+Tooling & Configuration
+
+package.json
+	•	Defines:
+	•	Project metadata
+	•	Dependencies
+	•	Scripts (start, dev, build)
+
+Node.js
+	•	Runs JavaScript outside the browser
+	•	Used for servers, tooling, APIs
+
+PM2
+	•	Process manager for Node apps
+	•	Keeps servers running, restarts on crash
+
+Vite
+	•	Front-end build tool
+	•	Fast dev server + optimized production builds
+
+⸻
+
+Acronyms
+	•	JSX: JavaScript XML
+	•	JS: JavaScript
+	•	AWS: Amazon Web Services
+	•	NPM: Node Package Manager
+	•	NVM: Node Version Manager
+
+⸻
+
+Exam Tips
+	•	Watch for Promises vs actual values
+	•	Pay attention to execution order (middleware, hooks)
+	•	Know what runs server-side vs client-side
+	•	Security questions = hash + salt + HTTPS
